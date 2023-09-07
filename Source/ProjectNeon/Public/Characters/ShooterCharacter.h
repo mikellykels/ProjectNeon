@@ -7,6 +7,7 @@
 #include "InputAction.h"
 #include "ShooterCharacter.generated.h"
 
+class AItem;
 class UCameraComponent;
 class USpringArmComponent;
 
@@ -20,6 +21,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Jump() override;
+	void IncrementOverlappedItemCount(int8 Amount);
 
 protected:
 	virtual void BeginPlay() override;
@@ -38,6 +40,8 @@ protected:
 	void FireButtonPressed();
 	void FireButtonReleased();
 	void StartFireTimer();
+	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation);
+	void TraceForItems();
 
 	void PlayHipFireMontage();
 
@@ -76,6 +80,11 @@ private:
 	float AutomaticFireRate = 0.1f;
 	FTimerHandle CrosshairShootTimer;
 	FTimerHandle AutoFireTimer;
+	bool bShouldTraceForItems = false;
+	int8 OverlappedItemCount = 0;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items", meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItemLastFrame;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
@@ -141,6 +150,7 @@ public:
 	FORCEINLINE USpringArmComponent* GetCamerBoom() const { return CameraBoom; }
 	FORCEINLINE UCameraComponent* GetFollowCamera() const { return FollowCamera; }
 	FORCEINLINE bool GetAiming() const { return bAiming; }
+	FORCEINLINE int8 GetOverlappedItemCount() const { return OverlappedItemCount; }
 
 	UFUNCTION(BlueprintCallable)
 	float GetCrosshairSpreadMultiplier() const;
