@@ -8,6 +8,7 @@
 #include "ShooterCharacter.generated.h"
 
 class AItem;
+class AWeapon;
 class UCameraComponent;
 class USpringArmComponent;
 
@@ -33,6 +34,9 @@ protected:
 	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
 	void AimingButtonPressed();
 	void AimingButtonReleased();
+	void SelectButtonPressed();
+	void SelectButtonReleased();
+
 	void CameraInterpZoom(float DeltaTime);
 	void SetLookRates();
 	void CalculateCrosshairSpread(float DeltaTime);
@@ -42,6 +46,10 @@ protected:
 	void StartFireTimer();
 	bool TraceUnderCrosshairs(FHitResult& OutHitResult, FVector& OutHitLocation);
 	void TraceForItems();
+	AWeapon* SpawnDefaultWeapon();
+	void EquipWeapon(AWeapon* WeaponToEquip);
+	void DropWeapon();
+	void SwapWeapon(AWeapon* WeaponToSwap);
 
 	void PlayHipFireMontage();
 
@@ -68,6 +76,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* AimAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* SelectAction;
 
 private:
 	float CameraDefaultFOV = 0.f;
@@ -145,6 +156,15 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Crosshairs", meta = (AllowPrivateAccess = "true"))
 	float CrosshairShootingFactor = 0.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	AWeapon* EquippedWeapon;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	TSubclassOf<AWeapon> DefaultWeaponClass;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItem;
 
 public:
 	FORCEINLINE USpringArmComponent* GetCamerBoom() const { return CameraBoom; }
