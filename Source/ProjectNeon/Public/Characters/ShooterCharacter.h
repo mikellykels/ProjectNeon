@@ -23,6 +23,8 @@ public:
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	virtual void Jump() override;
 	void IncrementOverlappedItemCount(int8 Amount);
+	FVector GetCameraInterpLocation();
+	void GetPickupItem(AItem* Item);
 
 protected:
 	virtual void BeginPlay() override;
@@ -94,9 +96,6 @@ private:
 	bool bShouldTraceForItems = false;
 	int8 OverlappedItemCount = 0;
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items", meta = (AllowPrivateAccess = "true"))
-	AItem* TraceHitItemLastFrame;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Camera", meta = (AllowPrivateAccess = "true"))
 	USpringArmComponent* CameraBoom;
 
@@ -165,6 +164,17 @@ private:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	AItem* TraceHitItem;
+
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items", meta = (AllowPrivateAccess = "true"))
+	AItem* TraceHitItemLastFrame;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Items", meta = (AllowPrivateAccess = "true"))
+	float CameraInterpDistance = 250.f;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Items", meta = (AllowPrivateAccess = "true"))
+	float CameraInterpElevation = 65.f;
 
 public:
 	FORCEINLINE USpringArmComponent* GetCamerBoom() const { return CameraBoom; }
