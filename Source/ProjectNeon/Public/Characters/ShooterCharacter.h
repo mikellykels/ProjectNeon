@@ -5,7 +5,17 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "InputAction.h"
+#include "Types/AmmoType.h"
 #include "ShooterCharacter.generated.h"
+
+UENUM(BlueprintType)
+enum class ECombatState : uint8
+{
+	ECS_Unoccupied          UMETA(DisplayName = "Unoccupied"),
+	ECS_FireTimerInProgress UMETA(DisplayName = "Fire Timer In Progress"),
+	ECS_Reloading           UMETA(DisplayName = "Reloading"),
+	ECS_MAX UMETA(DisplayName = "DefaultMAX")
+};
 
 class AItem;
 class AWeapon;
@@ -33,11 +43,13 @@ protected:
 	void Move(const FInputActionValue& Value);
 	void Look(const FInputActionValue& Value);
 	void FireWeapon();
+	void ReloadWeapon();
 	bool GetBeamEndLocation(const FVector& MuzzleSocketLocation, FVector& OutBeamLocation);
 	void AimingButtonPressed();
 	void AimingButtonReleased();
 	void SelectButtonPressed();
 	void SelectButtonReleased();
+	void ReloadButtonPressed();
 
 	void CameraInterpZoom(float DeltaTime);
 	void SetLookRates();
@@ -52,14 +64,23 @@ protected:
 	void EquipWeapon(AWeapon* WeaponToEquip);
 	void DropWeapon();
 	void SwapWeapon(AWeapon* WeaponToSwap);
+	void InitializeAmmoMap();
+	bool WeaponHasAmmo();
+	void SendBullet();
+	bool CarryingAmmo();
 
-	void PlayHipFireMontage();
+	void PlayFireSound();
+	void PlayGunFireMontage();
+	void PlayReloadMontage();
 
 	UFUNCTION()
 	void FinishCrosshairBulletFire();
 
 	UFUNCTION()
 	void AutoFireReset();
+
+	UFUNCTION(BlueprintCallable)
+	void FinishReloading();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputMappingContext* CharacterMappingContext;
@@ -81,6 +102,9 @@ protected:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
 	UInputAction* SelectAction;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Input")
+	UInputAction* ReloadAction;
 
 private:
 	float CameraDefaultFOV = 0.f;
@@ -135,6 +159,9 @@ private:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	UAnimMontage* HipFireMontage;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	UAnimMontage* ReloadMontage;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Combat", meta = (AllowPrivateAccess = "true"))
 	bool bAiming = false;
 
@@ -175,6 +202,18 @@ private:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Items", meta = (AllowPrivateAccess = "true"))
 	float CameraInterpElevation = 65.f;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Items", meta = (AllowPrivateAccess = "true"))
+	TMap<EAmmoType, int32> AmmoMap;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Items", meta = (AllowPrivateAccess = "true"))
+	int32 Starting9mmAmmo = 85;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Items", meta = (AllowPrivateAccess = "true"))
+	int32 StartingARAmmo = 120;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Combat", meta = (AllowPrivateAccess = "true"))
+	ECombatState CombatState = ECombatState::ECS_Unoccupied;
 
 public:
 	FORCEINLINE USpringArmComponent* GetCamerBoom() const { return CameraBoom; }
